@@ -56,5 +56,5 @@ def list_drawings():
     # List comprehension: keep only the files that end in .json
     names = [name for name in os.listdir(FOLDER) if name.endswith(".json")]
 
-    # Lambda: sort by the file name in lower case
-    return sorted(names, key=lambda name: name.lower())
+    # The names all start with the date, so sorting puts the newest last
+    return sorted(names)

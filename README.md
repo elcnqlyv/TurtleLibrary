@@ -1,6 +1,10 @@
 # Group 2 — Turtle Etch-A-Sketch, how to explain your code
 
-One section per person, in presentation order. Ilaha opens with the architecture, hands off to each of you, then closes with the main program and the demo.
+One section per person, in presentation order.
+
+Every section starts the same way: **what we needed**, then **what we did about it**. Say those two things first. The line-by-line walkthrough underneath is for when someone asks you to go deeper.
+
+Ilaha opens, hands off to each of you in turn, then closes with the main program and the live demo.
 
 Run it with `python3 main.py` from inside the project folder. That matters — the imports break if you run it from somewhere else.
 
@@ -19,6 +23,12 @@ Run it with `python3 main.py` from inside the project folder. That matters — t
 ---
 
 ## 1. Gadir — `canvas.py`
+
+### The short version
+
+We needed a way for the user to pick a colour, and a border so you can see where the drawing area ends.
+
+So we made a dictionary that turns a number key into a colour name, and wrote a function that draws a rectangle with a loop. We gave that border its own turtle, so clearing the drawing does not rub it out.
 
 ### Your code
 
@@ -88,6 +98,12 @@ Then a loop. `range(2)` gives us two passes. Each pass draws one long side and o
 ---
 
 ## 2. Aydan — `artist.py`
+
+### The short version
+
+We needed the pen to move when someone presses an arrow key, and a line of text showing the current colour and size.
+
+So we made a dictionary of directions and their angles, and wrote a function that points the turtle and moves it. For the text we made a second turtle that does nothing but write.
 
 ### Your code
 
@@ -163,6 +179,12 @@ We use two separate turtles. One draws, one writes. They are independent, so cle
 
 ## 3. Aytaj — `storage.py`
 
+### The short version
+
+We needed the drawing to survive after the window closes. Without this, everything is lost the moment you quit.
+
+So we turned the drawing into a JSON file. We put the date and time in the file name so nothing gets overwritten, and wrote a second function that reads a file back in.
+
 ### Your code
 
 ```python
@@ -210,7 +232,7 @@ def list_drawings():
 
     names = [name for name in os.listdir(FOLDER) if name.endswith(".json")]
 
-    return sorted(names, key=lambda name: name.lower())
+    return sorted(names)
 ```
 
 ### How to read it out loud
@@ -239,7 +261,7 @@ Finally we return the path so `main.py` can print where the drawing went.
 
 Then a list comprehension. Read it as: for every name in the folder, keep it if it ends in `.json`. It builds a new list in one line. The long form would be an empty list, a `for` loop, an `if`, and an `append` — four lines instead of one.
 
-Then we return that list sorted. The `key` parameter tells `sorted` what to compare, and we pass a lambda — a small unnamed function that takes a name and gives back its lower case version. So sorting ignores capital letters.
+Then we return that list sorted. Because every file name starts with the date and time, sorting them alphabetically also sorts them by age. The newest one ends up last, which is exactly what `main.py` wants.
 
 ### The one idea to land
 
@@ -249,13 +271,19 @@ The JSON file is readable. Open it in any text editor and you can see every poin
 
 **"Why a set and not a list for the colours?"** Because we want to know *which* colours appeared, not how many times. A set removes the duplicates for us with no extra code.
 
-**"What is a lambda?"** A function written in one line without a name, used where a full `def` would be overkill. `lambda name: name.lower()` does the same job as a two-line function that takes a name and returns it in lower case.
+**"How does sorting by name give you the newest?"** Because the name starts with the year, then the month, then the day, then the time. Sorting that text alphabetically puts them in time order for free.
 
 **"Why does the file name have a timestamp?"** So each save is its own file. `list_drawings` sorts them, and because the timestamp is at the front, the newest one ends up last.
 
 ---
 
 ## 4. Elchin — `recorder.py`
+
+### The short version
+
+We needed the program to remember what the user drew. Without that we cannot save it, replay it, or undo anything.
+
+So after every move we save one small dictionary into a list. To replay, we walk the list and do each move again. To undo, we drop the last item and replay what is left.
 
 ### Your code
 
@@ -336,6 +364,12 @@ Then we call `replay_drawing` on what is left. We do not erase one line segment.
 ---
 
 ## 5. Ilaha — `main.py`
+
+### The short version
+
+We needed one file to start the program and bring the other four together.
+
+So main.py imports all four, holds the four variables the program has to remember, sets up the window, and connects every key to a function. It is the only file that knows about the others.
 
 This is the file that runs. It imports the other four modules and wires them together. As main presenter you should introduce this file first at a high level, then come back to it at the end for the detail and the demo.
 
@@ -424,22 +458,41 @@ def set_colour(key):
 
 Worth noting: `save_point` does not need `global`, because it only reads the variables. `global` is only required when you assign a new value.
 
+### One small function for each key
+
+```python
+def move_up():
+    move("up")
+
+
+def use_red():
+    set_colour("2")
+
+
+def thicker():
+    change_size(1)
+```
+
+`onkey` can only call a function that takes no arguments. But `move` needs to know a direction, `set_colour` needs to know a key, and `change_size` needs to know an amount.
+
+So we give each key its own small function. `move_up` takes nothing, and all it does is call `move` with the value it needs. There are eleven of these and every one of them is two lines with the same shape.
+
 ### Binding keys
 
 ```python
 screen.listen()
 
-screen.onkey(lambda: move("up"), "Up")
-screen.onkey(lambda: set_colour("1"), "1")
-
+screen.onkey(move_up, "Up")
+screen.onkey(use_red, "2")
 screen.onkey(toggle_pen, "space")
+screen.onkey(save, "s")
 ```
 
 `screen.listen()` tells the window to pay attention to the keyboard. Without it nothing responds.
 
-`onkey` takes two things: a function to run, and the name of a key. The function must take no arguments. `move` needs to know which direction and `set_colour` needs to know which key, so we wrap each in a lambda that takes nothing and supplies the argument for us.
+`onkey` takes two things: the function to run, and the name of the key. Every line reads the same way — this function, that key.
 
-`toggle_pen` takes no arguments already, so we pass it directly. Note there are no brackets after it. Writing `toggle_pen()` would call the function immediately and hand `onkey` the result instead of the function itself. That is a common mistake and it fails silently.
+Note there are no brackets after the function names. `screen.onkey(save, "s")` hands turtle the function itself, to be called later when the key is pressed. Writing `save()` would run the function immediately and hand turtle whatever it returned. That is a common mistake and it fails quietly.
 
 ### The last lines
 
@@ -473,10 +526,10 @@ Bring this up if the instructor asks what you covered.
 | Two control structures | `for` loops in `canvas.py`, `recorder.py`, `main.py`; `if`/`else` in all five files |
 | Lists, tuples, sets, dictionaries | list of points, dictionary per point, `COLOURS` and `HEADINGS` dictionaries, set of colours in `storage.py`, tuple for the font |
 | Two extra libraries | `json`, `os`, `datetime` — three |
-| Two user-defined functions | fourteen across five files |
+| Two user-defined functions | twenty-five across five files |
 | Comments and consistent style | docstring at the top of every file and every function |
 | User interaction | the whole app is keyboard driven |
-| Advanced structures | list comprehension and set comprehension in `storage.py`, lambdas in `storage.py` and `main.py` |
+| Advanced structures | a list comprehension and a set comprehension in `storage.py` |
 | Real data structures | JSON files in the `drawings` folder |
 | Own modules | `canvas.py`, `artist.py`, `storage.py`, `recorder.py` |
 | Realistic use case | a drawing tool that saves its work and can replay it |

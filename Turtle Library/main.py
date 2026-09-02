@@ -157,27 +157,75 @@ def load():
 
 
 # ---------------------------------------------------------------
+# One small function for each key
+#
+# onkey can only call a function that takes no arguments.
+# Our move, set_colour and change_size functions all need a value,
+# so we give each key its own little function that supplies it.
+# ---------------------------------------------------------------
+def move_up():
+    move("up")
+
+
+def move_down():
+    move("down")
+
+
+def move_left():
+    move("left")
+
+
+def move_right():
+    move("right")
+
+
+def use_black():
+    set_colour("1")
+
+
+def use_red():
+    set_colour("2")
+
+
+def use_blue():
+    set_colour("3")
+
+
+def use_green():
+    set_colour("4")
+
+
+def use_orange():
+    set_colour("5")
+
+
+def thicker():
+    change_size(1)
+
+
+def thinner():
+    change_size(-1)
+
+
+# ---------------------------------------------------------------
 # Connect the keys to the functions
 # ---------------------------------------------------------------
 screen.listen()
 
-# onkey needs a function that takes no arguments, so we wrap each
-# call in a lambda that supplies the argument for us.
-screen.onkey(lambda: move("up"), "Up")
-screen.onkey(lambda: move("down"), "Down")
-screen.onkey(lambda: move("left"), "Left")
-screen.onkey(lambda: move("right"), "Right")
+screen.onkey(move_up, "Up")
+screen.onkey(move_down, "Down")
+screen.onkey(move_left, "Left")
+screen.onkey(move_right, "Right")
 
-screen.onkey(lambda: set_colour("1"), "1")
-screen.onkey(lambda: set_colour("2"), "2")
-screen.onkey(lambda: set_colour("3"), "3")
-screen.onkey(lambda: set_colour("4"), "4")
-screen.onkey(lambda: set_colour("5"), "5")
+screen.onkey(use_black, "1")
+screen.onkey(use_red, "2")
+screen.onkey(use_blue, "3")
+screen.onkey(use_green, "4")
+screen.onkey(use_orange, "5")
 
-screen.onkey(lambda: change_size(1), "plus")
-screen.onkey(lambda: change_size(-1), "minus")
+screen.onkey(thicker, "plus")
+screen.onkey(thinner, "minus")
 
-# These take no arguments already, so they need no lambda.
 screen.onkey(toggle_pen, "space")
 screen.onkey(undo, "u")
 screen.onkey(clear_all, "c")
